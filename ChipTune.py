@@ -2,6 +2,7 @@ import math
 import numpy
 import pyaudio
 import copy
+import re
 import wave
 
 class ChipTune:
@@ -49,7 +50,7 @@ class ChipTune:
             c=0
             for j in [n1,n2,n3]:
                 if len(j)>i:
-                    k+=[ChipTune.square(j[i].hertz, r, .5, 44100)]
+                    k+=[ChipTune.square(j[i].hertz, r, j[i].volume, 44100)]
                     c+=1
                 else:
                     k+=[ChipTune.square(0, r, 0, 44100)]
@@ -82,9 +83,42 @@ class ChipTune:
                     a[i].hertz = q[key]
         return a
 
+    def fileToNotes(filename):
+        k = []
+        with open(filename,"r") as f:
+            k = f.readlines()
+            print(k)
+        ar = []
+        for i in k:
+            ar.append([])
+            for j in i.split(" "):
+                if re.compile("(\.\d)?[ABCDEFG]\#?\d").match(j):
+                    if j[len(j)-1] == "\n":
+                        j = j[:-1]
+                    l=1
+                    note = ""
+                    point = 0
+                    if j[0] == '.':
+                        l = 2**int(j[1])
+                        point+=2
+                    if len(j) - point == 3:
+                        note = j[point:point+2]
+                        point+=2
+                    else:
+                        note = j[point]
+                        point+=1
+                    pitch = j[point]
+                    ar[len(ar)-1] += l*[ChipTune.Note(ChipTune.Notes[note]*2**(int(pitch)-3))]
+        return ar
+                    
+
 if __name__ == "__main__":
-    r = 1/5
-    main = [
+    r = 1/6
+    a = ChipTune.fileToNotes("in.txt")
+    while len(a)<3:
+        a.append([])
+    ChipTune.playNotes(a[0],a[1],a[2],r)
+    '''main = [
             ChipTune.Note(ChipTune.Notes["G"]),
             ChipTune.Note(ChipTune.Notes["D"]*2),
             ChipTune.Note(ChipTune.Notes["B"]*2),
@@ -108,28 +142,45 @@ if __name__ == "__main__":
         2*main+
         2*up+
         2*ChipTune.replace(up, {ChipTune.Notes["E"]*2:ChipTune.Notes["F#"]*2})+
-        2*main
+        2*main+
+        [
+            ChipTune.Note(ChipTune.Notes["G"]),
+            ChipTune.Note(ChipTune.Notes["E"]*2),
+            ChipTune.Note(ChipTune.Notes["B"]*2),
+            ChipTune.Note(ChipTune.Notes["A"]*2),
+            ChipTune.Note(ChipTune.Notes["B"]*2),
+            ChipTune.Note(ChipTune.Notes["G"]*2),
+            ChipTune.Note(ChipTune.Notes["F#"]*2),
+            ChipTune.Note(ChipTune.Notes["G"]*2),
+            ChipTune.Note(ChipTune.Notes["E"]*2),
+            ChipTune.Note(ChipTune.Notes["G"]*2),
+            ChipTune.Note(ChipTune.Notes["F#"]*2),
+            ChipTune.Note(ChipTune.Notes["G"]*2),
+            ChipTune.Note(ChipTune.Notes["B"]),
+            ChipTune.Note(ChipTune.Notes["E"]*2),
+            ChipTune.Note(ChipTune.Notes["C#"]*2),
+            ChipTune.Note(ChipTune.Notes["B"])
+        ]
+        ,        
+            2*(
+                3*[ChipTune.Note(ChipTune.Notes["G"])]+
+                2*[ChipTune.Note(ChipTune.Notes["G"],0)]+
+                3*[ChipTune.Note(ChipTune.Notes["D"]*2)])+
+            2*(
+                3*[ChipTune.Note(ChipTune.Notes["G"])]+
+                2*[ChipTune.Note(ChipTune.Notes["G"],0)]+
+                3*[ChipTune.Note(ChipTune.Notes["E"]*2)])+
+            2*(
+                3*[ChipTune.Note(ChipTune.Notes["G"])]+
+                2*[ChipTune.Note(ChipTune.Notes["G"],0)]+
+                3*[ChipTune.Note(ChipTune.Notes["F#"]*2)])+
+            2*(
+                3*[ChipTune.Note(ChipTune.Notes["G"])]+
+                2*[ChipTune.Note(ChipTune.Notes["G"],0)]+
+                3*[ChipTune.Note(ChipTune.Notes["D"]*2)])+
+            3*[ChipTune.Note(ChipTune.Notes["G"])]+13*[ChipTune.Note(ChipTune.Notes["G"],0)]+
+            3*[ChipTune.Note(ChipTune.Notes["A"])]+13*[ChipTune.Note(ChipTune.Notes["G"],0)]
         ,
-        [ChipTune.Note(x.hertz, 0.25) for x in (
-            2*(
-                2*[ChipTune.Note(ChipTune.Notes["G"])]+
-                3*[ChipTune.Note(ChipTune.Notes["G"],0)]+
-                2*[ChipTune.Note(ChipTune.Notes["D"]*2)]+
-                [ChipTune.Note(ChipTune.Notes["G"],0)])+
-            2*(
-                2*[ChipTune.Note(ChipTune.Notes["G"])]+
-                3*[ChipTune.Note(ChipTune.Notes["G"],0)]+
-                2*[ChipTune.Note(ChipTune.Notes["E"]*2)]+
-                [ChipTune.Note(ChipTune.Notes["G"],0)])+
-            2*(
-                2*[ChipTune.Note(ChipTune.Notes["G"])]+
-                3*[ChipTune.Note(ChipTune.Notes["G"],0)]+
-                2*[ChipTune.Note(ChipTune.Notes["F#"]*2)]+
-                [ChipTune.Note(ChipTune.Notes["G"],0)])+
-            2*(
-                2*[ChipTune.Note(ChipTune.Notes["G"])]+
-                3*[ChipTune.Note(ChipTune.Notes["G"],0)]+
-                2*[ChipTune.Note(ChipTune.Notes["D"]*2)]+
-                [ChipTune.Note(ChipTune.Notes["G"],0)])
-        )]
-    )
+        [],
+        r
+    )'''
