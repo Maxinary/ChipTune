@@ -86,29 +86,34 @@ class ChipTune:
     def fileToNotes(filename):
         k = []
         with open(filename,"r") as f:
-            k = f.readlines()
+            k = "".join(f.readlines()).replace("\n"," ").split("+")
             print(k)
         ar = []
         for i in k:
             ar.append([])
             for j in i.split(" "):
-                if re.compile("(\.\d)?[ABCDEFG]\#?\d").match(j):
+                if re.compile("(\.\d)?(0|([ABCDEFG]\#?))\d(\,\d\d)?").match(j):
                     if j[len(j)-1] == "\n":
                         j = j[:-1]
                     l=1
+                    v=.5
                     note = ""
                     point = 0
                     if j[0] == '.':
                         l = 2**int(j[1])
                         point+=2
-                    if len(j) - point == 3:
+                    if len(j) - point == 3 or j[(point+3)%len(j)]==',':
                         note = j[point:point+2]
                         point+=2
                     else:
                         note = j[point]
                         point+=1
                     pitch = j[point]
-                    ar[len(ar)-1] += l*[ChipTune.Note(ChipTune.Notes[note]*2**(int(pitch)-3))]
+                    point+=1
+                    if j[point%len(j)] == ',':
+                        point+=1
+                        v=int(j[point:point+2])/100.0
+                    ar[len(ar)-1] += l*[ChipTune.Note(ChipTune.Notes[note]*2**(int(pitch)-3),v)]
         return ar
                     
 
