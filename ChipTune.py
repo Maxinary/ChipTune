@@ -61,7 +61,6 @@ class ChipTune:
                     sume += j[i]
                     count += 1
             chunks.append([sume/count])
-        print(len(chunks))
         chunk = numpy.concatenate(chunks) * 0.25
         
         stream = p.open(format=pyaudio.paFloat32,
@@ -96,7 +95,8 @@ class ChipTune:
             k = "".join(f.readlines()).replace("\n"," ").split("+")
             print(k)
         ar = []
-        reg = re.compile("(\.\d)?(0|([ABCDEFG]\#?))\d(\,\d\d)?")
+        num = re.compile("\.\-?\d*(\.\d*)?")
+        reg = re.compile("(\.\-?\d*(\.\d*)?)?(0|([ABCDEFG]\#?))\d(\,\d\d)?")
         for i in k:
             ar.append([])
             for j in i.split(" "):
@@ -109,8 +109,9 @@ class ChipTune:
                     point = 0
                     pitch = 1
                     if j[0] == '.':
-                        l = 2**int(j[1])
-                        point+=2
+                        value = num.search(j)
+                        l = 2**float(value.group(0)[1:])
+                        point+=len(value.group(0))
                     if j[point] != "0":
                         if len(j) - point == 3 or j[(point+3)%len(j)]==',':
                             note = j[point:point+2]
