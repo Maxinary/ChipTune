@@ -23,9 +23,10 @@ class ChipTune:
 
 
     class Note:
-        def __init__(self, hertz, volume=.5):
+        def __init__(self, hertz, length, volume=.5):
             self.hertz = hertz
             self.volume = volume
+            self.length = length
 
     Notes = {
         "C": 130.81,
@@ -45,18 +46,24 @@ class ChipTune:
     def playNotes(n1=[],n2=[],n3=[],r=0.2):
         p = pyaudio.PyAudio()
         chunks = []
-        for i in range(max([len(n1),len(n2),len(n3)])):
-            k=[]
-            c=0
-            for j in [n1,n2,n3]:
-                if len(j)>i:
-                    k+=[ChipTune.square(j[i].hertz, r, j[i].volume, 44100)]
-                    c+=1
-                else:
-                    k+=[ChipTune.square(0, r, 0, 44100)]
-            chunks.append([(k[0][x]+k[1][x]+k[2][x])/c for x in range(int(r*44100))])
-            chunk = numpy.concatenate(chunks) * 0.25
-
+        intermediate = []
+        for i in range(3):
+            h = [n1,n2,n3][i]
+            if h!=[]:
+                intermediate.append([])
+                for j in range(len(h)):
+                    intermediate[i] += ChipTune.square(h[j].hertz, r*h[j].length, h[j].volume, 44100)
+        for i in range(max([len(k) for k in intermediate])):
+            sume = 0
+            count = 0
+            for j in intermediate:
+                if i < len(j):
+                    sume += j[i]
+                    count += 1
+            chunks.append([sume/count])
+        print(len(chunks))
+        chunk = numpy.concatenate(chunks) * 0.25
+        
         stream = p.open(format=pyaudio.paFloat32,
                     channels=1, rate=44100, output=1
                         ,frames_per_buffer=1024)
@@ -89,10 +96,11 @@ class ChipTune:
             k = "".join(f.readlines()).replace("\n"," ").split("+")
             print(k)
         ar = []
+        reg = re.compile("(\.\d)?(0|([ABCDEFG]\#?))\d(\,\d\d)?")
         for i in k:
             ar.append([])
             for j in i.split(" "):
-                if re.compile("(\.\d)?(0|([ABCDEFG]\#?))\d(\,\d\d)?").match(j):
+                if reg.match(j):
                     if j[len(j)-1] == "\n":
                         j = j[:-1]
                     l=1
@@ -119,13 +127,13 @@ class ChipTune:
                     if j[point%len(j)] == ',':
                         point+=1
                         v=int(j[point:point+2])/100.0
-                    ar[len(ar)-1] += l*[ChipTune.Note(ChipTune.Notes[note]*2**(int(pitch)-3),v)]
+                    ar[len(ar)-1].append(ChipTune.Note(ChipTune.Notes[note]*2**(int(pitch)-3), l, v))
         return ar
                     
 
 if __name__ == "__main__":
-    r = 1/5
-    a = ChipTune.fileToNotes("in.txt")
+    r = 1/9
+    a = ChipTune.fileToNotes("USA.txt")
     while len(a)<3:
         a.append([])
     ChipTune.playNotes(a[0],a[1],a[2],r)
