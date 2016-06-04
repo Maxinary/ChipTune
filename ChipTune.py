@@ -96,7 +96,7 @@ class ChipTune:
             print(k)
         ar = []
         num = re.compile("\.\-?\d*(\.\d*)?")
-        reg = re.compile("(\.\-?\d*(\.\d*)?)?(0|([ABCDEFG]\#?))\d(\,\d\d)?")
+        reg = re.compile("(\.\-?\d*(\.\d*)?)?(O|([ABCDEFG]\#?))\d(\,\d\d)?")
         for i in k:
             ar.append([])
             for j in i.split(" "):
@@ -112,7 +112,7 @@ class ChipTune:
                         value = num.search(j)
                         l = 2**float(value.group(0)[1:])
                         point+=len(value.group(0))
-                    if j[point] != "0":
+                    if j[point] != "O":
                         if len(j) - point == 3 or j[(point+3)%len(j)]==',':
                             note = j[point:point+2]
                             point+=2
@@ -122,7 +122,7 @@ class ChipTune:
                         pitch = j[point]
                     else:
                         pitch = 0
-                        l=0
+                        v = 0
                         point+=1
                     point+=1
                     if j[point%len(j)] == ',':
