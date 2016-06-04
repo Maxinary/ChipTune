@@ -96,7 +96,7 @@ class ChipTune:
             print(k)
         ar = []
         num = re.compile("\.\-?\d*(\.\d*)?")
-        reg = re.compile("(\.\-?\d*(\.\d*)?)?(O|([ABCDEFG]\#?))\d(\,\d\d)?")
+        reg = re.compile("(\.\-?\d*(\.\d*)?)?(O|([ABCDEFG]\#?\d(\,\d\d)?))")
         for i in k:
             ar.append([])
             for j in i.split(" "):
@@ -123,6 +123,7 @@ class ChipTune:
                     else:
                         pitch = 0
                         v = 0
+                        note = "G"
                         point+=1
                     point+=1
                     if j[point%len(j)] == ',':
