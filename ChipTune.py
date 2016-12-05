@@ -58,10 +58,7 @@ class ChipTune:
             intermediate.append([])
             for j in range(len(h)):#for every note/rest in that melody
                 #Turn it into a tick array of volume pos at that point
-                if h[j].hertz < ChipTune.Notes["C"]:#play the low notes as triangle waves
-                    intermediate[i] += ChipTune.triangle(h[j].hertz, r*h[j].length, h[j].volume, 44100, 0)
-                else:#high notes are square
-                    intermediate[i] += ChipTune.square(h[j].hertz, r*h[j].length, h[j].volume, 44100, 0)
+                intermediate[i] += ChipTune.square(h[j].hertz, r*h[j].length, h[j].volume, 44100, 0)
         for i in range(max([len(k) for k in intermediate])):#go through all the notes and combine the melody
             sume = 0
             for j in intermediate:#iterate through all of the notes for that tick
@@ -142,7 +139,7 @@ class ChipTune:
 
 if __name__ == "__main__":
     r = 1/5
-    a = ChipTune.fileToNotes("in.txt")
+    a = ChipTune.fileToNotes("USA.txt")
     while len(a)<3:
         a.append([])
     ChipTune.playNotes(a,r)
