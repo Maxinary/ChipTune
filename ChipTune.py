@@ -10,13 +10,13 @@ class ChipTune:
     def square(frequency, length, volume, rate, offset):
         length = int(length * rate)
         factor = float(frequency) * (math.pi * 2) / rate
-        k = [volume if x%(2*math.pi)>math.pi else -volume for x in (numpy.arange(length)+offset) * factor]
+        k = [volume/2 if x%(2*math.pi)>math.pi else -volume/2 for x in (numpy.arange(length)+offset) * factor]
         return k
 
     def triangle(frequency, length, volume, rate, offset):
         length = int(length * rate)
         factor = float(frequency) * (math.pi * 2) / rate
-        k = [volume-2*volume*(x%(2*math.pi)-math.pi)/math.pi if x%(2*math.pi)>math.pi else -volume+2*volume*(x%(2*math.pi))/math.pi for x in (numpy.arange(length)+offset) * factor]
+        k = [volume*(1-4*abs(1/2 - (1/2*(x*(factor))+1/4)%1)) for x in (numpy.arange(length)+offset) * factor]
         return k
 
     def play_tone(stream, frequency=440, length=1, volume=.5, rate=44100):
@@ -76,7 +76,7 @@ class ChipTune:
             w.setframerate(44100.0)
 
             intVec = numpy.vectorize(lambda x: int(x))
-            w.writeframes(intVec(chunk * 0.1 * 2**31).astype(numpy.int16).tostring())
+            w.writeframes(intVec(chunk * 2**31).astype(numpy.int16).tostring())
             
         stream.write(chunk.astype(numpy.float32).tostring())
 
@@ -136,10 +136,11 @@ class ChipTune:
                     ar[len(ar)-1].append(ChipTune.Note(ChipTune.Notes[note]*2**(int(pitch)-3), l, v))
         return ar
                     
-
-if __name__ == "__main__":
-    r = 1/5
-    a = ChipTune.fileToNotes("USA.txt")
+def main(name, r=1/3):
+    a = ChipTune.fileToNotes(name)
     while len(a)<3:
         a.append([])
     ChipTune.playNotes(a,r)
+    
+if __name__ == "__main__":
+    main("song2.txt")
